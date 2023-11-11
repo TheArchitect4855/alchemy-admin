@@ -1,8 +1,7 @@
 <script lang="ts">
-	import 'chart.js/auto';
-	import { Chart, Line } from 'svelte-chartjs';
 	import type { LayoutData } from "../$types";
 	import type { ActiveUsers } from "$lib/Database";
+	import Chart from "../../Chart.svelte";
 
 	export let data: LayoutData;
 
@@ -42,7 +41,7 @@
 <section>
 	<h4>Active Users</h4>
 	<div class="container">
-		<Line data={ activeUsers } options={{ maintainAspectRatio: false }} />
+		<Chart type="line" data={ activeUsers } options={{ maintainAspectRatio: false }} />
 	</div>
 </section>
 <hr />
