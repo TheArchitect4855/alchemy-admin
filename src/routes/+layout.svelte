@@ -57,6 +57,12 @@
 		padding: 0.5em 1em;
 	}
 
+	:global(hr) {
+		border: none;
+		border-bottom: 1px solid var(--colour-surface-10);
+		margin: 0.5rem 0;
+	}
+
 	:global(input) {
 		background-color: inherit;
 		border: 1px solid var(--colour-surface-60);
