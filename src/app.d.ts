@@ -1,4 +1,7 @@
 // See https://kit.svelte.dev/docs/types#app
+
+import type { Env } from "$lib/env";
+
 // for information about these interfaces
 declare global {
 	namespace App {
@@ -6,9 +9,7 @@ declare global {
 		// interface Locals {}
 		// interface PageData {}
 		interface Platform {
-			env?: {
-				// TODO
-			}
+			env?: Env,
 		}
 	}
 }

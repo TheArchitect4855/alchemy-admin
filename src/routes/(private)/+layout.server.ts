@@ -2,19 +2,33 @@ import type { LayoutServerLoad } from "./$types";
 import { dev } from "$app/environment";
 import type { Session } from "$lib/session";
 import { error, redirect } from "@sveltejs/kit";
+import { getCookies } from "$lib/cookies";
 
-export const load: LayoutServerLoad = ({ url }) => {
+const allowedRoutes = [
+	{ path: '/analytics', name: 'Analytics' },
+];
+
+export const load: LayoutServerLoad = async ({ platform, request, url }): Promise<any> => {
 	// Authenticate
 	let session: Session;
 	if (dev) {
 		session = {
-			allowedRoutes: [
-				{ path: '/analytics', name: 'Analytics' },
-			],
+			allowedRoutes: allowedRoutes,
 			name: 'Developer',
 		};
 	} else {
-		throw error(501, 'Not Implemented');
+		const env = platform?.env;
+		if (!env) throw error(500, 'Missing ENV');
+
+		const cookies = getCookies(request);
+		const sid = cookies['sid'];
+		if (!sid) throw redirect(303, '/login');
+
+		const kv = await env.KV_CACHE.get(`admin-${sid}`);
+		if (kv == null) throw redirect(303, '/login');
+
+		session = JSON.parse(kv);
+		session.allowedRoutes = allowedRoutes;
 	}
 
 	if (session.allowedRoutes.length == 0) throw error(500, 'Internal Server Error (User Has No Permissions)');
