@@ -17,6 +17,11 @@ export type AdminContact = {
 	phone: string,
 }
 
+export type AllowedRoute = {
+	path: string,
+	name: string,
+};
+
 export type AnonymizedFunnels = {
 	seen: number,
 	loginsStarted: number,
@@ -138,6 +143,21 @@ export default class Database {
 		return { seen, loginsStarted, loginsSucceeded, waitlisted, profileCreationStarted, basicProfileCreated, photoUploads, tosAgreed, profileCreationCompleted, usersMatched, usersMessaged, profilesDeleted };
 	}
 
+	async getAllowedRoutesByContact(contact: string): Promise<AllowedRoute[]> {
+		const query = await this.client.query(`
+			SELECT ar.path, ar.name
+			FROM admin_contacts ac
+			INNER JOIN admin_contact_routes acr
+				ON ac.id = acr.contact
+			INNER JOIN admin_routes ar
+				ON ar.id = acr.route
+			WHERE ac.id = $1
+			ORDER BY name
+		`, [ contact ]);
+
+		return query.rows.map(toAllowedRoute);
+	}
+
 	static async connect(config: string): Promise<Database> {
 		const client = new neon.Client(config);
 		await client.connect();
@@ -163,5 +183,12 @@ function toAdminContact(row: any): AdminContact {
 		id: row.id,
 		name: row.name,
 		phone: row.phone,
+	};
+}
+
+function toAllowedRoute(row: any): AllowedRoute {
+	return {
+		path: row.path,
+		name: row.name,
 	};
 }

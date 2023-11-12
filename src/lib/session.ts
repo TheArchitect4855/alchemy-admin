@@ -1,4 +1,6 @@
+import type { AllowedRoute } from "./Database";
+
 export type Session = {
-	allowedRoutes: { path: string, name: string }[],
+	allowedRoutes: AllowedRoute[],
 	name: string,
 };

@@ -2,6 +2,7 @@ import { dev } from "$app/environment";
 import Database from "$lib/Database";
 import LoginHandler, { SendLoginCodeResult, VerifyLoginCodeResult } from "$lib/LoginHandler";
 import { base64EncodeBuffer } from "$lib/encoding";
+import type { Session } from "$lib/session";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 
 const sessionTtl = 604_800;
@@ -20,6 +21,9 @@ export const POST: RequestHandler = async ({ platform, request }): Promise<Respo
 	const db = await Database.connect(env.DB_CONFIG);
 	const contact = await db.adminContactGetByPhone(phone);
 	if (contact == null) throw error(403, 'You Shall Not Pass');
+
+	const allowedRoutes = await db.getAllowedRoutesByContact(contact.id);
+	console.log(allowedRoutes);
 	db.close();
 
 	const loginHandler = LoginHandler.getHandler(env);
@@ -27,7 +31,12 @@ export const POST: RequestHandler = async ({ platform, request }): Promise<Respo
 	switch (res) {
 		case VerifyLoginCodeResult.OK:
 			const sessionId = genSessionId();
-			await env.KV_CACHE.put(`admin-${sessionId}`, JSON.stringify(contact), {
+			const session: Session = {
+				allowedRoutes,
+				name: contact.name,
+			};
+
+			await env.KV_CACHE.put(`admin-${sessionId}`, JSON.stringify(session), {
 				expirationTtl: sessionTtl,
 			});
 

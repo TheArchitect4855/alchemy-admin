@@ -4,7 +4,8 @@ import type { Session } from "$lib/session";
 import { error, redirect } from "@sveltejs/kit";
 import { getCookies } from "$lib/cookies";
 
-const allowedRoutes = [
+const developerRoutes = [
+	{ path: '/aim', name: 'Admin Identity Management' },
 	{ path: '/analytics', name: 'Analytics' },
 ];
 
@@ -13,7 +14,7 @@ export const load: LayoutServerLoad = async ({ platform, request, url }): Promis
 	let session: Session;
 	if (dev) {
 		session = {
-			allowedRoutes: allowedRoutes,
+			allowedRoutes: developerRoutes,
 			name: 'Developer',
 		};
 	} else {
@@ -28,7 +29,6 @@ export const load: LayoutServerLoad = async ({ platform, request, url }): Promis
 		if (kv == null) throw redirect(303, '/login');
 
 		session = JSON.parse(kv);
-		session.allowedRoutes = allowedRoutes;
 	}
 
 	if (session.allowedRoutes.length == 0) throw error(500, 'Internal Server Error (User Has No Permissions)');
