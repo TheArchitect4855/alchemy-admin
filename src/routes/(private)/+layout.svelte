@@ -21,6 +21,8 @@
 
 <style>
 	:global(body) {
+		height: 100vh;
+
 		display: grid;
 		grid-template-columns: 20ch 1fr;
 		grid-template-rows: calc(64px + 1rem) 1fr;
@@ -48,6 +50,7 @@
 	main {
 		grid-column: 2 / 3;
 		grid-row: 2 / 3;
+		overflow: auto;
 		padding: 0.5rem;
 	}
 </style>
