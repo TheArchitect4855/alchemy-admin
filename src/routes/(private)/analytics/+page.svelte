@@ -30,9 +30,45 @@
 			},
 			{
 				label: 'Avg. Dau (Month)',
-				borderColor: '#F5cb5c',
+				borderColor: '#f5cb5c',
 				data: data.activeUsers.map((e: ActiveUsers) => e.avgDau30),
 			},
+		],
+	};
+
+	const funnelColours: { [key: string]: string } = {
+		'Logins Failed': '#f5cb5c',
+		'Profile Deleted': '#f44336',
+		'Waitlisted': '#f5cb5c',
+	};
+
+	const funnels = {
+		datasets: [
+			{
+				label: 'Funnels',
+				colorMode: 'to',
+				colorFrom: (e: any) => funnelColours[e.raw.from] ?? '#00d2fc',
+				colorTo: (e: any) => funnelColours[e.raw.to] ?? '#00d2fc',
+				column: {
+					'Logins Failed': 2,
+					'Waitlisted': 3,
+				},
+				size: 'max',
+				data: [
+					{ from: 'Total Visitors', to: 'Logins Started', flow: data.funnels.loginsStarted },
+					{ from: 'Logins Started', to: 'Logins Succeeded', flow: data.funnels.loginsSucceeded },
+					{ from: 'Logins Started', to: 'Logins Failed', flow: data.funnels.loginsStarted - data.funnels.loginsSucceeded },
+					{ from: 'Logins Succeeded', to: 'Waitlisted', flow: data.funnels.waitlisted },
+					{ from: 'Logins Succeeded', to: 'Profile Creation Started', flow: data.funnels.profileCreationStarted },
+					{ from: 'Profile Creation Started', to: 'Basic Profile Created', flow: data.funnels.basicProfileCreated },
+					{ from: 'Basic Profile Created', to: 'Photo Uploads', flow: data.funnels.photoUploads },
+					{ from: 'Photo Uploads', to: 'TOS Agreed', flow: data.funnels.tosAgreed },
+					{ from: 'TOS Agreed', to: 'Profile Creation Completed', flow: data.funnels.profileCreationCompleted },
+					{ from: 'Profile Creation Completed', to: 'Users Matched', flow: data.funnels.usersMatched },
+					{ from: 'Users Matched', to: 'Users Messaged', flow: data.funnels.usersMessaged },
+					{ from: 'Profile Creation Completed', to: 'Profile Deleted', flow: data.funnels.profilesDeleted },
+				],
+			}
 		],
 	};
 </script>
@@ -45,6 +81,12 @@
 	</div>
 </section>
 <hr />
+<section>
+	<h4>Funnels</h4>
+	<div class="container">
+		<Chart type="sankey" data={ funnels } options={{ maintainAspectRatio: false }} />
+	</div>
+</section>
 
 <style>
 	section > .container {

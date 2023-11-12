@@ -118,6 +118,7 @@ export default class Database {
 				first_message IS NOT NULL AS was_messaged,
 				profile_deleted IS NOT NULL AS profile_deleted
 			FROM funnels
+			WHERE first_seen > '2023-09-05' -- Bad data before here
 			ORDER BY first_seen DESC
 		`);
 

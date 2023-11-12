@@ -302,17 +302,17 @@
 		}
 	],
 	"funnels": {
-		"seen": 195,
-		"loginsStarted": 45,
-		"loginsSucceeded": 31,
-		"waitlisted": 2,
-		"profileCreationStarted": 17,
-		"basicProfileCreated": 12,
-		"photoUploads": 12,
-		"tosAgreed": 12,
-		"profileCreationCompleted": 14,
-		"usersMatched": 6,
-		"usersMessaged": 5,
+		"seen": 143,
+		"loginsStarted": 23,
+		"loginsSucceeded": 21,
+		"waitlisted": 1,
+		"profileCreationStarted": 11,
+		"basicProfileCreated": 8,
+		"photoUploads": 8,
+		"tosAgreed": 8,
+		"profileCreationCompleted": 8,
+		"usersMatched": 1,
+		"usersMessaged": 1,
 		"profilesDeleted": 2
-	}
+}
 }

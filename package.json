@@ -23,6 +23,7 @@
 	"type": "module",
 	"dependencies": {
 		"@neondatabase/serverless": "^0.6.0",
-		"chart.js": "^4.4.0"
+		"chart.js": "^4.4.0",
+		"chartjs-chart-sankey": "^0.12.0"
 	}
 }
