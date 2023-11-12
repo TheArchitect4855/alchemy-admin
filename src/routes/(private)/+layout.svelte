@@ -47,6 +47,11 @@
 		padding: 0.5rem;
 	}
 
+	nav > a {
+		display: block;
+		margin: 0.5em;
+	}
+
 	main {
 		grid-column: 2 / 3;
 		grid-row: 2 / 3;
