@@ -7,24 +7,21 @@ import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 
 const sessionTtl = 604_800;
 
-export const POST: RequestHandler = async ({ platform, request }): Promise<Response> => {
+export const POST: RequestHandler = async ({ locals, platform, request }): Promise<Response> => {
 	const body = await request.formData();
 	const phone = body.get('phone')?.toString();
 	const code = body.get('code')?.toString();
 	if (phone == null || code == null) throw error(422, 'Missing Parameters');
 
-	if (dev) throw redirect(303, '/');
+	if (dev) return new Response();
 
 	const env = platform?.env;
 	if (!env) throw error(500, 'Missing ENV');
 
-	const db = await Database.connect(env.DB_CONFIG);
-	const contact = await db.adminContactGetByPhone(phone);
+	const contact = await locals.db.adminContactGetByPhone(phone);
 	if (contact == null) throw error(403, 'You Shall Not Pass');
 
-	const allowedRoutes = await db.getAllowedRoutesByContact(contact.id);
-	console.log(allowedRoutes);
-	db.close();
+	const allowedRoutes = await locals.db.getAllowedRoutesByContact(contact.id);
 
 	const loginHandler = LoginHandler.getHandler(env);
 	const res = await loginHandler.verifyLoginCode(phone, code);
@@ -56,7 +53,7 @@ export const POST: RequestHandler = async ({ platform, request }): Promise<Respo
 	}
 };
 
-export const PUT: RequestHandler = async ({ platform, request }): Promise<Response> => {
+export const PUT: RequestHandler = async ({ locals, platform, request }): Promise<Response> => {
 	const body = await request.formData();
 	const phone = body.get('phone')?.toString();
 	if (phone == null) throw error(422, 'Missing Parameters');
@@ -66,10 +63,8 @@ export const PUT: RequestHandler = async ({ platform, request }): Promise<Respon
 	const env = platform?.env;
 	if (!env) throw error(500, 'Missing ENV');
 
-	const db = await Database.connect(env.DB_CONFIG);
-	const contact = await db.adminContactGetByPhone(phone);
+	const contact = await locals.db.adminContactGetByPhone(phone);
 	if (contact == null) throw error(403, 'You Shall Not Pass');
-	db.close();
 
 	const loginHandler = LoginHandler.getHandler(env);
 	const res = await loginHandler.sendLoginCode(phone, 'sms');

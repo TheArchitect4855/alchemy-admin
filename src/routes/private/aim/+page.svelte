@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { AdminContact } from "$lib/Database";
-	import type { LayoutData } from "../$types";
+	import type { PageData } from "./$types";
 
-	export let data: LayoutData;
+	export let data: PageData;
 	let addUserDialog: HTMLDialogElement;
 	let editUserDialog: HTMLDialogElement;
 	let saveConfDialog: HTMLDialogElement;
@@ -62,7 +62,7 @@
 		tombstones = tombstones.filter((e) => !e);
 
 		let body = { contacts: localContacts, grid: localGrid };
-		const res = await fetch('/aim', {
+		const res = await fetch('/private/aim', {
 			body: JSON.stringify(body),
 			method: 'PUT',
 		});
@@ -73,8 +73,6 @@
 		}
 
 		body = await res.json();
-		console.dir(body);
-
 		remoteContacts = body.contacts;
 		remoteGrid = body.grid;
 		initLocalData();

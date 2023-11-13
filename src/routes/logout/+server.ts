@@ -1,16 +1,14 @@
 import { dev } from "$app/environment";
-import { getCookies } from "$lib/cookies";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 
-export const GET: RequestHandler = ({ platform, request }): Response => {
+export const GET: RequestHandler = ({ cookies, platform }): Response => {
 	if (dev) throw redirect(303, '/login');
 
 	const env = platform?.env;
 	if (!env) throw error(500, 'Missing ENV');
 
-	const cookies = getCookies(request);
-	const sid = cookies['sid'];
-	if (sid == null) throw redirect(303, '/login');
+	const sid = cookies.get('sid');
+	if (!sid) throw redirect(303, '/login');
 	env.KV_CACHE.delete(sid);
 
 	const headers = new Headers();

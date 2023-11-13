@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { LayoutData } from "../$types";
+	import type { PageData } from "./$types";
 	import type { ActiveUsers } from "$lib/Database";
 	import Chart from "../../Chart.svelte";
 
-	export let data: LayoutData;
+	export let data: PageData;
 
 	const activeUsers = {
 		labels: data.activeUsers.map((e: ActiveUsers) => new Date(e.date).toLocaleDateString()),

@@ -247,8 +247,8 @@ export default class Database {
 				const jGrid = grid[j];
 				for (let r = 0; r < iGrid.length; r += 1) {
 					if (iGrid[r] == jGrid[r]) continue;
-					if (iGrid[r]) await this.client.query('DELETE FROM admin_contact_routes WHERE contact = $1 AND route = $2', [ id, current.routes[r] ]);
-					else await this.client.query('INSERT INTO admin_contact_routes (contact, route) VALUES ($1, $2)', [ id, current.routes[r] ]);
+					if (iGrid[r]) await this.client.query('DELETE FROM admin_contact_routes WHERE contact = $1 AND route = $2', [ id, current.routes[r].id ]);
+					else await this.client.query('INSERT INTO admin_contact_routes (contact, route) VALUES ($1, $2)', [ id, current.routes[r].id ]);
 				}
 			}
 

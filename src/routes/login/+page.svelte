@@ -36,7 +36,7 @@
 			});
 
 			if (res.ok) {
-				window.location.pathname = '/';
+				window.location.pathname = '/private';
 			} else {
 				console.error(`${res.status} ${res.statusText}`);
 				const body = await res.json();

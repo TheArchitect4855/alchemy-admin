@@ -12,7 +12,7 @@
 </header>
 <nav>
 {#each data.session.allowedRoutes as route}
-	<a href={ route.path }>{ route.name }</a>
+	<a href={ `/private${route.path}` }>{ route.name }</a>
 {/each}
 </nav>
 <main>
