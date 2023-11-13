@@ -8,7 +8,7 @@
 <header>
 	<img id="logo" alt="Alchemy" src="/logo-64.png" />
 	<h1>Alchemy Admin</h1>
-	<IdTag name={ data.session.name } />
+	<IdTag name={ data.session.contact.name } />
 </header>
 <nav>
 {#each data.session.allowedRoutes as route}

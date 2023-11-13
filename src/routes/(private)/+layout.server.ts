@@ -15,7 +15,11 @@ export const load: LayoutServerLoad = async ({ platform, request, url }): Promis
 	if (dev) {
 		session = {
 			allowedRoutes: developerRoutes,
-			name: 'Developer',
+			contact: {
+				id: '00000000-0000-0000-0000-000000000000',
+				name: 'Developer',
+				phone: '+15555555555',
+			},
 		};
 	} else {
 		const env = platform?.env;

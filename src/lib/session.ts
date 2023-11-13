@@ -1,6 +1,6 @@
-import type { AllowedRoute } from "./Database";
+import type { AdminContact, AllowedRoute } from "./Database";
 
 export type Session = {
 	allowedRoutes: AllowedRoute[],
-	name: string,
+	contact: AdminContact,
 };

@@ -1,4 +1,5 @@
 import * as neon from '@neondatabase/serverless';
+import { error } from '@sveltejs/kit';
 
 export type ActiveUsers = {
 	date: Date,
@@ -17,9 +18,21 @@ export type AdminContact = {
 	phone: string,
 }
 
+export type AdminRoute = {
+	id: string,
+	path: string,
+	name: string,
+};
+
 export type AllowedRoute = {
 	path: string,
 	name: string,
+};
+
+export type AllowedRoutesGrid = {
+	contacts: AdminContact[],
+	routes: AdminRoute[],
+	grid: boolean[][],
 };
 
 export type AnonymizedFunnels = {
@@ -158,6 +171,97 @@ export default class Database {
 		return query.rows.map(toAllowedRoute);
 	}
 
+	async getAllowedRoutesGrid(): Promise<AllowedRoutesGrid> {
+		const contactsQuery = await this.client.query(`
+			SELECT id, name, phone
+			FROM admin_contacts
+			ORDER BY name
+		`);
+
+		const routesQuery = await this.client.query(`
+			SELECT id, path, name
+			FROM admin_routes
+			ORDER BY name
+		`);
+
+		const linksQuery = await this.client.query(`
+			SELECT contact, route
+			FROM admin_contact_routes
+		`);
+
+		const contacts = contactsQuery.rows.map(toAdminContact);
+		const routes = routesQuery.rows.map(toAdminRoute);
+		const routeIds = routes.map((e) => e.id);
+
+		const links: { [contact: string]: boolean[] } = {};
+		for (const row of linksQuery.rows) {
+			if (links[row.contact] == undefined) {
+				links[row.contact] = new Array(routes.length).fill(false);
+			}
+
+			const i = routeIds.indexOf(row.route);
+			links[row.contact][i] = true;
+		}
+
+		const grid: boolean[][] = [];
+		for (const c of contacts) grid.push(links[c.id]);
+		return { contacts, routes, grid };
+	}
+
+	async updateAllowedRoutesGrid(contacts: AdminContact[], grid: boolean[][]): Promise<AllowedRoutesGrid> {
+		await this.client.query('BEGIN TRANSACTION');
+		try {
+			const current = await this.getAllowedRoutesGrid();
+			const contactIds = contacts.map((e) => e.id);
+			const checkRoutes: string[] = [];
+			for (const c of current.contacts) {
+				const i = contactIds.indexOf(c.id);
+				if (i < 0) {
+					await this.client.query('DELETE FROM admin_contact_routes WHERE contact = $1', [ c.id ]);
+					await this.client.query('DELETE FROM admin_contacts WHERE id = $1', [ c.id ]);
+					continue;
+				}
+
+				const contact = contacts[i];
+				checkRoutes.push(contact.id);
+				if (c.name == contact.name && c.phone == contact.phone) continue;
+				await this.client.query('UPDATE admin_contacts SET name = $2, phone = $3 WHERE id = $1', [ contact.id, contact.name, contact.phone ]);
+			}
+
+			for (let i = 0; i < contacts.length; i += 1) {
+				const c = contacts[i];
+				if (current.contacts.findIndex((e) => e.id == c.id) >= 0) continue;
+
+				const q = await this.client.query('INSERT INTO admin_contacts (name, phone) VALUES ($1, $2) RETURNING id', [ c.name, c.phone ]);
+				c.id = q.rows[0].id;
+
+				const g = grid[i].map((e, j) => e ? current.routes[j].id : null).filter((e) => e != null);
+				for (const r of g) await this.client.query('INSERT INTO admin_contact_routes (contact, route) VALUES ($1, $2)', [ c.id, r ]);
+			}
+
+			for (const id of checkRoutes) {
+				const i = current.contacts.findIndex((e) => e.id == id);
+				const j = contactIds.indexOf(id);
+
+				const iGrid = current.grid[i];
+				const jGrid = grid[j];
+				for (let r = 0; r < iGrid.length; r += 1) {
+					if (iGrid[r] == jGrid[r]) continue;
+					if (iGrid[r]) await this.client.query('DELETE FROM admin_contact_routes WHERE contact = $1 AND route = $2', [ id, current.routes[r] ]);
+					else await this.client.query('INSERT INTO admin_contact_routes (contact, route) VALUES ($1, $2)', [ id, current.routes[r] ]);
+				}
+			}
+
+			await this.client.query('COMMIT');
+		} catch (e: unknown) {
+			await this.client.query('ROLLBACK');
+			console.error(e);
+			throw error(500, 'Internal Server Error');
+		}
+		
+		return this.getAllowedRoutesGrid();
+	}
+
 	static async connect(config: string): Promise<Database> {
 		const client = new neon.Client(config);
 		await client.connect();
@@ -183,6 +287,14 @@ function toAdminContact(row: any): AdminContact {
 		id: row.id,
 		name: row.name,
 		phone: row.phone,
+	};
+}
+
+function toAdminRoute(row: any): AdminRoute {
+	return {
+		id: row.id,
+		path: row.path,
+		name: row.name,
 	};
 }
 

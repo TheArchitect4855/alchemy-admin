@@ -1,7 +1,7 @@
 import { dev } from "$app/environment";
 import Database from "$lib/Database";
 import { error, type ServerLoad } from "@sveltejs/kit";
-import devAnalytics from './devAnalytics.json';
+import devAnalytics from './dev.data.json';
 
 export const load: ServerLoad = async ({ platform }): Promise<any> => {
 	if (dev) return devAnalytics;

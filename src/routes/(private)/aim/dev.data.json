@@ -1,0 +1,38 @@
+{
+	"grid": {
+		"contacts": [
+			{
+				"id": "00000000-0000-0000-0000-000000000000",
+				"name": "Developer",
+				"phone": "+15555555555"
+			},
+			{
+				"id": "0b1d172c-1a3b-4858-b444-aecd1984f816",
+				"name": "Kurtis",
+				"phone": "+17785812740"
+			}
+		],
+		"routes": [
+			{
+				"id": "5b2cf0bf-06f7-40e1-a157-16e33b48cab4",
+				"path": "/aim",
+				"name": "Admin Identity Management"
+			},
+			{
+				"id": "bf5fef1d-9d45-4327-92a3-d43982e8875b",
+				"path": "/analytics",
+				"name": "Analytics"
+			}
+		],
+		"grid": [
+			[
+				true,
+				true
+			],
+			[
+				true,
+				true
+			]
+		]
+	}
+}

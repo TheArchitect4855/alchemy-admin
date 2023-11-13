@@ -33,7 +33,7 @@ export const POST: RequestHandler = async ({ platform, request }): Promise<Respo
 			const sessionId = genSessionId();
 			const session: Session = {
 				allowedRoutes,
-				name: contact.name,
+				contact,
 			};
 
 			await env.KV_CACHE.put(`admin-${sessionId}`, JSON.stringify(session), {

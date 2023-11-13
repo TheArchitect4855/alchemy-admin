@@ -18,6 +18,7 @@
 
 		--colour-surface-05: #f2f2f2;
 		--colour-surface-10: #e6e6e6;
+		--colour-surface-20: #cccccc;
 		--colour-surface-50: #808080;
 		--colour-surface-60: #666666;
 		--colour-surface-80: #333333;
@@ -57,6 +58,42 @@
 		padding: 0.5em 1em;
 	}
 
+	:global(button:disabled) {
+		cursor: not-allowed;
+	}
+
+	:global(button.icon) {
+		background-color: transparent;
+		border-radius: 0;
+		padding: 0;
+	}
+
+	:global(button.icon > *) {
+		vertical-align: middle;
+	}
+
+	:global(dialog) {
+		border: 1px solid var(--colour-surface-20);
+		border-radius: 4px;
+		box-shadow: 2px 2px 4px #0005;
+		max-width: 80ch;
+	}
+
+	:global(dialog::backdrop) {
+		backdrop-filter: blur(4px);
+	}
+
+	:global(dialog > header) {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1em;
+	}
+
+	:global(dialog > header > *) {
+		margin: 0;
+	}
+
 	:global(hr) {
 		border: none;
 		border-bottom: 1px solid var(--colour-surface-10);
@@ -64,6 +101,7 @@
 	}
 
 	:global(input) {
+		accent-color: var(--colour-primary);
 		background-color: inherit;
 		border: 1px solid var(--colour-surface-60);
 		border-radius: 1em;
@@ -76,5 +114,14 @@
 	:global(label) {
 		color: var(--colour-surface-60);
 		font-size: 0.9em;
+	}
+
+	:global(table) {
+		border-collapse: collapse;
+	}
+
+	:global(table td, table th) {
+		border: 1px solid var(--colour-surface-10);
+		padding: 0.25em 0.5em;
 	}
 </style>
