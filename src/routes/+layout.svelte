@@ -9,19 +9,38 @@
 <slot></slot>
 
 <style>
-	:global(:root) {
-		--colour-error: #f44336;
-		--colour-primary: #7cff66;
-		--colour-secondary: #00d2fc;
-		--colour-surface: #ffffff;
-		--colour-text: #202020;
+	@media (prefers-color-scheme: light) {
+		:global(:root) {
+			--colour-error: #f44336;
+			--colour-primary: #7cff66;
+			--colour-secondary: #00d2fc;
+			--colour-surface: #ffffff;
+			--colour-text: #202020;
 
-		--colour-surface-05: #f2f2f2;
-		--colour-surface-10: #e6e6e6;
-		--colour-surface-20: #cccccc;
-		--colour-surface-50: #808080;
-		--colour-surface-60: #666666;
-		--colour-surface-80: #333333;
+			--colour-surface-05: #f2f2f2;
+			--colour-surface-10: #e6e6e6;
+			--colour-surface-20: #cccccc;
+			--colour-surface-50: #808080;
+			--colour-surface-60: #666666;
+			--colour-surface-80: #333333;
+		}
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(:root) {
+			--colour-error: #f44336;
+			--colour-primary: #7cff66;
+			--colour-secondary: #00d2fc;
+			--colour-surface: #101010;
+			--colour-text: #ffffff;
+
+			--colour-surface-05: #1d1d1d;
+			--colour-surface-10: #2a2a2a;
+			--colour-surface-20: #434343;
+			--colour-surface-50: #909090;
+			--colour-surface-60: #a9a9a9;
+			--colour-surface-80: #dcdcdc;
+		}
 	}
 
 	:global(.error) {
@@ -51,6 +70,7 @@
 		background-color: var(--colour-primary);
 		border: none;
 		border-radius: 1em;
+		color: var(--colour-text);
 		cursor: pointer;
 		font-family: inherit;
 		font-size: inherit;
@@ -73,9 +93,11 @@
 	}
 
 	:global(dialog) {
+		background-color: var(--colour-surface);
 		border: 1px solid var(--colour-surface-20);
 		border-radius: 4px;
 		box-shadow: 2px 2px 4px #0005;
+		color: var(--colour-text);
 		max-width: 80ch;
 	}
 
