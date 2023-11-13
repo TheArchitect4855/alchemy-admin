@@ -1,56 +1,9 @@
 import * as neon from '@neondatabase/serverless';
 import { error } from '@sveltejs/kit';
+import type Database from './interface';
+import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels } from './types';
 
-export type ActiveUsers = {
-	date: Date,
-	dau: number,
-	wau: number,
-	mau: number,
-	yau: number,
-	avgDau7: number,
-	avgDau30: number,
-	avgDau365: number,
-};
-
-export type AdminContact = {
-	id: string,
-	name: string,
-	phone: string,
-}
-
-export type AdminRoute = {
-	id: string,
-	path: string,
-	name: string,
-};
-
-export type AllowedRoute = {
-	path: string,
-	name: string,
-};
-
-export type AllowedRoutesGrid = {
-	contacts: AdminContact[],
-	routes: AdminRoute[],
-	grid: boolean[][],
-};
-
-export type AnonymizedFunnels = {
-	seen: number,
-	loginsStarted: number,
-	loginsSucceeded: number,
-	waitlisted: number,
-	profileCreationStarted: number,
-	basicProfileCreated: number,
-	photoUploads: number,
-	tosAgreed: number,
-	profileCreationCompleted: number,
-	usersMatched: number,
-	usersMessaged: number,
-	profilesDeleted: number,
-};
-
-export default class Database {
+export default class NeonDatabase implements Database {
 	private client: neon.Client;
 
 	constructor(client: neon.Client) {
@@ -262,10 +215,10 @@ export default class Database {
 		return this.getAllowedRoutesGrid();
 	}
 
-	static async connect(config: string): Promise<Database> {
+	static async connect(config: string): Promise<NeonDatabase> {
 		const client = new neon.Client(config);
 		await client.connect();
-		return new Database(client);
+		return new NeonDatabase(client);
 	}
 }
 

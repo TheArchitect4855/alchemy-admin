@@ -1,7 +1,7 @@
 // See https://kit.svelte.dev/docs/types#app
 
 import type { Env } from "$lib/env";
-import type Database from "$lib/Database";
+import type Database from "$lib/database/interface";
 import type { Session } from "$lib/session";
 
 // for information about these interfaces

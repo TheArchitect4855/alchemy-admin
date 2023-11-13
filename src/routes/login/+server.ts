@@ -1,9 +1,8 @@
 import { dev } from "$app/environment";
-import Database from "$lib/Database";
 import LoginHandler, { SendLoginCodeResult, VerifyLoginCodeResult } from "$lib/LoginHandler";
 import { base64EncodeBuffer } from "$lib/encoding";
 import type { Session } from "$lib/session";
-import { error, redirect, type RequestHandler } from "@sveltejs/kit";
+import { error, type RequestHandler } from "@sveltejs/kit";
 
 const sessionTtl = 604_800;
 

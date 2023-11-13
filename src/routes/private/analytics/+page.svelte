@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from "./$types";
-	import type { ActiveUsers } from "$lib/Database";
 	import Chart from "../../Chart.svelte";
+	import type { ActiveUsers } from "$lib/database/types";
 
 	export let data: PageData;
 

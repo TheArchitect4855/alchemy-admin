@@ -1,6 +1,13 @@
 <script lang="ts">
-	import type { AdminContact } from "$lib/Database";
+	import type { AdminContact } from "$lib/database/types";
 	import type { PageData } from "./$types";
+
+	type LocalContact = {
+		id: string | null,
+		name: string,
+		phone: string,
+		isDirty: boolean,
+	};
 
 	export let data: PageData;
 	let addUserDialog: HTMLDialogElement;
@@ -11,7 +18,7 @@
 	const routes: typeof data.grid.routes = data.grid.routes;
 	let remoteContacts: typeof data.grid.contacts = data.grid.contacts;
 	let remoteGrid: typeof data.grid.grid = data.grid.grid;
-	let localContacts: typeof remoteContacts;
+	let localContacts: LocalContact[];
 	let localGrid: typeof remoteGrid;
 	initLocalData();
 
@@ -37,7 +44,7 @@
 		const name = formData.get('name')!.toString();
 		const phone = formData.get('phone')!.toString();
 
-		const contact = localContacts.find((e: AdminContact) => e.id == id);
+		const contact = localContacts.find((e) => e.id == id)!;
 		contact.name = name;
 		contact.phone = phone;
 		contact.isDirty = true;
@@ -45,7 +52,7 @@
 	}
 
 	function initLocalData(): void {
-		localContacts = [ ...remoteContacts ];
+		localContacts = remoteContacts.map((e) => ({ ...e, isDirty: false }));
 		localGrid = [];
 		for (const r of remoteGrid) localGrid.push([ ...r ]);
 	}
@@ -57,11 +64,11 @@
 	async function save(): Promise<void> {
 		saveConfDialog.close();
 
-		localContacts = (localContacts as AdminContact[]).filter((_, i) => !tombstones[i]);
+		localContacts = localContacts.filter((_, i) => !tombstones[i]);
 		localGrid = (localGrid as boolean[][]).filter((_, i) => !tombstones[i]);
 		tombstones = tombstones.filter((e) => !e);
 
-		let body = { contacts: localContacts, grid: localGrid };
+		let body = { contacts: localContacts as AdminContact[], grid: localGrid };
 		const res = await fetch('/private/aim', {
 			body: JSON.stringify(body),
 			method: 'PUT',
@@ -78,14 +85,14 @@
 		initLocalData();
 	}
 
-	function showEditUserDialog(contact: AdminContact): void {
+	function showEditUserDialog(contact: LocalContact): void {
 		const [ idInput, nameInput, phoneInput ] = [
 			document.querySelector('#edit-user-id-input'),
 			document.querySelector('#edit-user-name-input'),
 			document.querySelector('#edit-user-phone-input'),
 		] as HTMLInputElement[];
 
-		idInput.value = contact.id;
+		idInput.value = contact.id!;
 		nameInput.value = contact.name;
 		phoneInput.value = contact.phone;
 		editUserDialog.showModal();
