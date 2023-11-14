@@ -9,7 +9,7 @@ export const GET: RequestHandler = ({ cookies, platform }): Response => {
 
 	const sid = cookies.get('sid');
 	if (!sid) throw redirect(303, '/login');
-	env.KV_CACHE.delete(sid);
+	env.KV_CACHE.delete(`admin-${sid}`);
 
 	const headers = new Headers();
 	headers.set('Location', '/login');
