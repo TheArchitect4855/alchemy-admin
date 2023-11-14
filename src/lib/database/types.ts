@@ -46,3 +46,17 @@ export type AnonymizedFunnels = {
 	usersMessaged: number,
 	profilesDeleted: number,
 };
+
+export type ApiStats = {
+	date: Date,
+	requestCount: number,
+	clientErrorCount: number,
+	serverErrorCount: number,
+};
+
+export type ResponseTime = {
+	date: Date,
+	p10: number,
+	p50: number,
+	p99: number,
+};

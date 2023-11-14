@@ -1,19 +1,21 @@
 import type Database from "./interface";
-import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid } from "./types";
+import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid, ApiStats, ResponseTime } from "./types";
 import data from "./mock.json";
+
+const lastMonth = Date.now() - 2_592_000_000;
+const dayMs = 86_400_000;
 
 export default class MockDatabase implements Database {
 	async close(): Promise<void> { }
 
 	async activeUsersGet(): Promise<ActiveUsers[]> {
 		const activeUsers: ActiveUsers[] = [];
-		const start = Date.now() - 2_592_000_000; // 30 days
-		const runningDau365 = new Array(365).fill(0).map((_) => randomRangeI(-5, 5) + 50);
+		const runningDau365 = new Array(365).fill(0).map((_) => randomRangeI(45, 55));
 		const runningDau30 = runningDau365.slice(runningDau365.length - 30);
 		const runningDau7 = runningDau365.slice(runningDau365.length - 7);
 		let dau = runningDau7[runningDau7.length - 1];
 		for (let i = 0; i < 30; i += 1) {
-			const date = new Date(start + 86_400_000 * i);
+			const date = new Date(lastMonth + dayMs * i);
 			dau += Math.round(Math.random() * 2 - 1);
 			const wau = Math.round(dau + (Math.random() * 2 - 1));
 			const mau = Math.round(dau + (Math.random() * 2 - 1));
@@ -83,6 +85,37 @@ export default class MockDatabase implements Database {
 
 		const grid = new Array(contacts.length).fill(new Array(routes.length).fill(true));
 		return { contacts, routes, grid };
+	}
+
+	async getApiStats(): Promise<ApiStats[]> {
+		const stats: ApiStats[] = [];
+		let requestCount = randomRangeI(450, 550);
+		for (let i = 0; i < 30; i += 1) {
+			const date = new Date(lastMonth + dayMs * i);
+			stats.push({
+				date,
+				requestCount,
+				clientErrorCount: Math.round(requestCount * randomRange(0.1, 0.2)),
+				serverErrorCount: Math.round(requestCount * randomRange(0, 0.1)),
+			});
+
+			requestCount += randomRangeI(-50, 50);
+		}
+
+		return stats;
+	}
+
+	async getResponseTimes(): Promise<ResponseTime[]> {
+		const responseTimes: ResponseTime[] = [];
+		for (let i = 0; i < 30; i += 1) {
+			const date = new Date(lastMonth + dayMs * i);
+			const p10 = randomRange(0, 250);
+			const p50 = p10 + randomRange(0, 500 - p10);
+			const p99 = p50 + randomRange(0, 1000 - p50);
+			responseTimes.push({ date, p10, p50, p99 });
+		}
+
+		return responseTimes;
 	}
 
 	async updateAllowedRoutesGrid(contacts: AdminContact[], grid: boolean[][]): Promise<AllowedRoutesGrid> {

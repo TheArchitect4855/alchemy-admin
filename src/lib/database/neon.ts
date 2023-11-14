@@ -1,7 +1,7 @@
 import * as neon from '@neondatabase/serverless';
 import { error } from '@sveltejs/kit';
 import type Database from './interface';
-import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels } from './types';
+import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels, ApiStats, ResponseTime } from './types';
 
 export default class NeonDatabase implements Database {
 	private client: neon.Client;
@@ -161,6 +161,38 @@ export default class NeonDatabase implements Database {
 		return { contacts, routes, grid };
 	}
 
+	async getApiStats(): Promise<ApiStats[]> {
+		const query = await this.client.query(`
+			SELECT date_trunc('day', created_at) AS ts, count(*) AS num_requests,
+				count(status) FILTER (WHERE status >= 400 AND status < 500) AS client_errors,
+				count(status) FILTER (WHERE status >= 500 AND status < 600) AS server_errors
+			FROM api_logs
+			WHERE created_at > now() - INTERVAL '30 DAYS'
+				AND client_info LIKE 'Alchemy App%'
+			GROUP BY ts
+			ORDER BY ts ASC
+			LIMIT 30
+		`);
+
+		return query.rows.map(toApiStats);
+	}
+
+	async getResponseTimes(): Promise<ResponseTime[]> {
+		const query = await this.client.query(`
+			SELECT date_trunc('day', created_at) AS ts,
+				percentile_cont(0.1) WITHIN GROUP (ORDER BY request_duration) AS p10,
+				percentile_cont(0.5) WITHIN GROUP (ORDER BY request_duration) AS p50,
+				percentile_cont(0.99) WITHIN GROUP (ORDER BY request_duration) AS p99
+			FROM api_logs
+			WHERE created_at > now() - INTERVAL '30 DAYS'
+			GROUP BY ts
+			ORDER BY ts ASC
+			LIMIT 30
+		`);
+
+		return query.rows.map(toResponseTime);
+	}
+
 	async updateAllowedRoutesGrid(contacts: AdminContact[], grid: boolean[][]): Promise<AllowedRoutesGrid> {
 		await this.client.query('BEGIN TRANSACTION');
 		try {
@@ -255,5 +287,23 @@ function toAllowedRoute(row: any): AllowedRoute {
 	return {
 		path: row.path,
 		name: row.name,
+	};
+}
+
+function toApiStats(row: any): ApiStats {
+	return {
+		date: new Date(row.ts),
+		requestCount: row.num_requests,
+		clientErrorCount: row.client_errors,
+		serverErrorCount: row.server_errors,
+	};
+}
+
+function toResponseTime(row: any): ResponseTime {
+	return {
+		date: new Date(row.ts),
+		p10: row.p10.milliseconds,
+		p50: row.p50.milliseconds,
+		p99: row.p99.milliseconds,
 	};
 }
