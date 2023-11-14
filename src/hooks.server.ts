@@ -5,11 +5,6 @@ import NeonDatabase from "$lib/database/neon";
 import type { Session } from "$lib/session";
 import { error, redirect, type Handle } from "@sveltejs/kit";
 
-const developerRoutes = [
-	{ path: '/aim', name: 'Admin Identity Management' },
-	{ path: '/analytics', name: 'Analytics' },
-];
-
 export const handle: Handle = async ({ event, resolve }): Promise<Response> => {
 	// Authentication
 	if (event.url.pathname == '/login' && dev) {
@@ -33,12 +28,8 @@ export const handle: Handle = async ({ event, resolve }): Promise<Response> => {
 	if (dev) {
 		db = new MockDatabase();
 		session = {
-			allowedRoutes: developerRoutes,
-			contact: {
-				id: '00000000-0000-0000-0000-000000000000',
-				name: 'Developer',
-				phone: '+15555555555',
-			},
+			allowedRoutes: await db.getAllowedRoutesByContact(''),
+			contact: (await db.adminContactGetByPhone(''))!,
 		};
 	} else {
 		const env = event.platform?.env;
