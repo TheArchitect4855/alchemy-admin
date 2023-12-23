@@ -54,6 +54,12 @@ export type ApiStats = {
 	serverErrorCount: number,
 };
 
+export type ClientVersion = {
+	semver: string,
+	isUpdateRequired: boolean,
+	createdAt: Date,
+};
+
 export type ResponseTime = {
 	date: Date,
 	p10: number,

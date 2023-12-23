@@ -2,7 +2,8 @@
 	"allowedRoutes": [
 		{ "path": "/aim", "name": "Admin Identity Management" },
 		{ "path": "/analytics", "name": "Analytics" },
-		{ "path": "/api-logs", "name": "API Logs" }
+		{ "path": "/api-logs", "name": "API Logs" },
+		{ "path": "/client-versions", "name": "Client Versions" }
 	],
 	"developer": {
 		"id": "00000000-0000-0000-0000-000000000000",

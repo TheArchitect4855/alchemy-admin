@@ -1,11 +1,13 @@
 import type Database from "./interface";
-import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid, ApiStats, ResponseTime } from "./types";
+import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid, ApiStats, ResponseTime, ClientVersion } from "./types";
 import data from "./mock.json";
 
 const lastMonth = Date.now() - 2_592_000_000;
 const dayMs = 86_400_000;
 
 export default class MockDatabase implements Database {
+	private static clientVersions: ClientVersion[] = [ { semver: '0.0.0', isUpdateRequired: true, createdAt: new Date() } ];
+
 	async close(): Promise<void> { }
 
 	async activeUsersGet(): Promise<ActiveUsers[]> {
@@ -40,6 +42,21 @@ export default class MockDatabase implements Database {
 
 	async adminContactGetByPhone(phone: string): Promise<AdminContact | null> {
 		return data['developer'];
+	}
+
+	async clientVersionCreate(semver: string, isUpdateRequired: boolean): Promise<ClientVersion> {
+		const ver = { semver, isUpdateRequired, createdAt: new Date() };
+		MockDatabase.clientVersions.unshift(ver);
+		return ver;
+	}
+
+	async clientVersionSetIsUpdateRequired(version: ClientVersion): Promise<void> {
+		const ver = MockDatabase.clientVersions.find((e) => e.semver == version.semver);
+		if (ver != null) ver.isUpdateRequired = version.isUpdateRequired;
+	}
+
+	async clientVersionsGet(): Promise<ClientVersion[]> {
+		return MockDatabase.clientVersions;
 	}
 
 	async funnelsGetAnonymized(): Promise<AnonymizedFunnels> {

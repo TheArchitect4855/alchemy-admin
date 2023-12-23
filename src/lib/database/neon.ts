@@ -1,7 +1,7 @@
 import * as neon from '@neondatabase/serverless';
 import { error } from '@sveltejs/kit';
 import type Database from './interface';
-import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels, ApiStats, ResponseTime } from './types';
+import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels, ApiStats, ClientVersion, ResponseTime } from './types';
 
 export default class NeonDatabase implements Database {
 	private client: neon.Client;
@@ -73,6 +73,35 @@ export default class NeonDatabase implements Database {
 
 		if (query.rows.length == 0) return null;
 		return toAdminContact(query.rows[0]);
+	}
+
+	async clientVersionCreate(semver: string, isUpdateRequired: boolean): Promise<ClientVersion> {
+		const query = await this.client.query(`
+			INSERT INTO client_versions (semver, is_update_required)
+			VALUES ($1, $2)
+			RETURNING semver, is_update_required, created_at
+		`, [ semver, isUpdateRequired ]);
+
+		return toClientVersion(query.rows[0]);
+	}
+
+	async clientVersionSetIsUpdateRequired(version: ClientVersion): Promise<void> {
+		await this.client.query(`
+			UPDATE client_versions
+			SET is_update_required = $3
+			WHERE semver = $1
+				AND created_at = $2
+		`, [ version.semver, version.createdAt, version.isUpdateRequired ]);
+	}
+
+	async clientVersionsGet(): Promise<ClientVersion[]> {
+		const query = await this.client.query(`
+			SELECT semver, is_update_required, created_at
+			FROM client_versions
+			ORDER BY created_at DESC
+		`);
+
+		return query.rows.map(toClientVersion);
 	}
 
 	async funnelsGetAnonymized(): Promise<AnonymizedFunnels> {
@@ -297,6 +326,10 @@ function toApiStats(row: any): ApiStats {
 		clientErrorCount: row.client_errors,
 		serverErrorCount: row.server_errors,
 	};
+}
+
+function toClientVersion(row: any): ClientVersion {
+	return { semver: row.semver, isUpdateRequired: row.is_update_required, createdAt: new Date(row.created_at) };
 }
 
 function toResponseTime(row: any): ResponseTime {
