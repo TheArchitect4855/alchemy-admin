@@ -16,9 +16,11 @@ export default interface Database {
 	profileSetVisible(contact: string, opts: { isVisible: boolean }): Promise<void>;
 	funnelsGetAnonymized(): Promise<AnonymizedFunnels>;
 
+	deleteProfileReviewQueue(id: string): Promise<void>;
 	getAllowedRoutesByContact(contact: string): Promise<AllowedRoute[]>;
 	getAllowedRoutesGrid(): Promise<AllowedRoutesGrid>;
 	getApiStats(): Promise<ApiStats[]>;
+	getProfileReviewQueue(): Promise<Profile[]>;
 	getResponseTimes(): Promise<ResponseTime[]>;
 	updateAllowedRoutesGrid(contacts: AdminContact[], grid: boolean[][]): Promise<AllowedRoutesGrid>;
 }

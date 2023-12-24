@@ -197,6 +197,14 @@ export default class NeonDatabase implements Database {
 		return { seen, loginsStarted, loginsSucceeded, waitlisted, profileCreationStarted, basicProfileCreated, photoUploads, tosAgreed, profileCreationCompleted, usersMatched, usersMessaged, profilesDeleted };
 	}
 
+	async deleteProfileReviewQueue(id: string): Promise<void> {
+		await this.client.query(`
+			DELETE FROM review_queue
+			WHERE item = $1
+				AND kind = 'profile'
+		`, [ id ]);
+	}
+
 	async getAllowedRoutesByContact(contact: string): Promise<AllowedRoute[]> {
 		const query = await this.client.query(`
 			SELECT ar.path, ar.name
@@ -263,6 +271,23 @@ export default class NeonDatabase implements Database {
 		`);
 
 		return query.rows.map(toApiStats);
+	}
+
+	async getProfileReviewQueue(): Promise<Profile[]> {
+		const query = await this.client.query(`
+			SELECT c.id, c.phone, c.dob, c.is_redlisted, c.tos_agreed, c.created_at AS ct_created_at,
+				p.name, p.bio, p.gender, p.photo_urls, p.neurodiversities, p.interests,
+				p.relationship_interests, p.pronouns, p.is_visible, p.created_at AS pr_created_at
+			FROM review_queue rq
+			INNER JOIN profiles p
+				ON rq.item = p.contact
+			INNER JOIN contacts c
+				ON rq.item = c.id
+			WHERE rq.kind = 'profile'
+			ORDER BY rq.created ASC
+		`);
+
+		return query.rows.map(toProfile);
 	}
 
 	async getResponseTimes(): Promise<ResponseTime[]> {

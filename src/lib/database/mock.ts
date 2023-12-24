@@ -120,6 +120,8 @@ export default class MockDatabase implements Database {
 		};
 	}
 
+	async deleteProfileReviewQueue(id: string): Promise<void> { }
+
 	async getAllowedRoutesByContact(contact: string): Promise<AllowedRoute[]> {
 		return data['allowedRoutes'];
 	}
@@ -153,6 +155,8 @@ export default class MockDatabase implements Database {
 
 		return stats;
 	}
+
+	async getProfileReviewQueue(): Promise<Profile[]> { return []; }
 
 	async getResponseTimes(): Promise<ResponseTime[]> {
 		const responseTimes: ResponseTime[] = [];
