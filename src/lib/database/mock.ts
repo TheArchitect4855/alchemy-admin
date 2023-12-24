@@ -1,5 +1,5 @@
 import type Database from "./interface";
-import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid, ApiStats, ResponseTime, ClientVersion } from "./types";
+import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid, ApiStats, ResponseTime, ClientVersion, Contact } from "./types";
 import data from "./mock.json";
 
 const lastMonth = Date.now() - 2_592_000_000;
@@ -7,6 +7,7 @@ const dayMs = 86_400_000;
 
 export default class MockDatabase implements Database {
 	private static clientVersions: ClientVersion[] = [ { semver: '0.0.0', isUpdateRequired: true, createdAt: new Date() } ];
+	private static contacts: Contact[] = getRandomContacts(10);
 
 	async close(): Promise<void> { }
 
@@ -57,6 +58,23 @@ export default class MockDatabase implements Database {
 
 	async clientVersionsGet(): Promise<ClientVersion[]> {
 		return MockDatabase.clientVersions;
+	}
+
+	async contactGet(id: string): Promise<Contact | null> {
+		return MockDatabase.contacts.find((e) => e.id == id) ?? null;
+	}
+
+	async contactGetByPhone(phone: string): Promise<Contact | null> {
+		return MockDatabase.contacts.find((e) => e.phone == phone) ?? null;
+	}
+
+	async contactUpdate(id: string, opts: { phone: string; dob: Date; isRedlisted: boolean; }): Promise<void> {
+		const contact = MockDatabase.contacts.find((e) => e.id == id);
+		if (contact == null) return;
+
+		contact.phone = opts.phone;
+		contact.dob = opts.dob;
+		contact.isRedlisted = opts.isRedlisted;
 	}
 
 	async funnelsGetAnonymized(): Promise<AnonymizedFunnels> {
@@ -146,6 +164,32 @@ export default class MockDatabase implements Database {
 		res.grid = grid;
 		return res;
 	}
+}
+
+function getRandomContacts(count: number): Contact[] {
+	const res: Contact[] = [];
+	for (let i = 0; i < count; i += 1) {
+		const idChunks = [];
+		for (let j = 0; j < 8; j += 1) {
+			const n = randomRangeI(0, 65535);
+			const h = n.toString(16).padStart(4, '0');
+			idChunks.push(h);
+		}
+
+		const id = `${idChunks[0]}${idChunks[1]}-${idChunks[2]}-${idChunks[3]}-${idChunks[4]}-${idChunks[5]}${idChunks[6]}${idChunks[7]}`;
+
+		let phone = '+1';
+		for (let i = 0; i < 10; i += 1) phone += randomRangeI(1, 9).toString();
+
+		const dobYear = randomRangeI(1998, 2003);
+		const dobMonth = randomRangeI(0, 11);
+		const dobDay = randomRange(0, 28);
+		const dob = new Date(dobYear, dobMonth, dobDay);
+		res.push({ id, phone, dob, isRedlisted: Math.random() < 0.5, tosAgreed: Math.random() < 0.5, createdAt: new Date() });
+	}
+
+	console.dir(res);
+	return res;
 }
 
 function randomRange(min: number, max: number): number {

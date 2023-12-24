@@ -56,6 +56,15 @@
 		color: var(--colour-secondary);
 	}
 
+	:global(a.icon) {
+		padding: 0;
+		text-decoration: none;
+	}
+
+	:global(a.icon > *) {
+		vertical-align: middle;
+	}
+
 	:global(body) {
 		background-color: var(--colour-surface);
 		color: var(--colour-text);

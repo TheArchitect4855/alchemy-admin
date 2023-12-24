@@ -60,6 +60,15 @@ export type ClientVersion = {
 	createdAt: Date,
 };
 
+export type Contact = {
+	id: string,
+	phone: string,
+	dob: Date,
+	isRedlisted: boolean,
+	tosAgreed: boolean,
+	createdAt: Date,
+};
+
 export type ResponseTime = {
 	date: Date,
 	p10: number,

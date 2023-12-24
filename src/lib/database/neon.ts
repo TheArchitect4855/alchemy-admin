@@ -1,7 +1,7 @@
 import * as neon from '@neondatabase/serverless';
 import { error } from '@sveltejs/kit';
 import type Database from './interface';
-import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels, ApiStats, ClientVersion, ResponseTime } from './types';
+import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels, ApiStats, ClientVersion, Contact, ResponseTime } from './types';
 
 export default class NeonDatabase implements Database {
 	private client: neon.Client;
@@ -102,6 +102,38 @@ export default class NeonDatabase implements Database {
 		`);
 
 		return query.rows.map(toClientVersion);
+	}
+
+	async contactGet(id: string): Promise<Contact | null> {
+		const query = await this.client.query(`
+			SELECT id, phone, dob, is_redlisted, tos_agreed, created_at
+			FROM contacts
+			WHERE id = $1
+		`, [ id ]);
+
+		if (query.rows.length == 0) return null;
+		else return toContact(query.rows[0]);
+	}
+
+	async contactGetByPhone(phone: string): Promise<Contact | null> {
+		const query = await this.client.query(`
+			SELECT id, phone, dob, is_redlisted, tos_agreed, created_at
+			FROM contacts
+			WHERE phone = $1
+		`, [ phone ]);
+
+		if (query.rows.length == 0) return null;
+		else return toContact(query.rows[0]);
+	}
+
+	async contactUpdate(id: string, opts: { phone: string; dob: Date; isRedlisted: boolean; }): Promise<void> {
+		await this.client.query(`
+			UPDATE contact
+			SET phone = $2,
+				dob = $3,
+				is_redlisted = $4
+			WHERE id = $1
+		`, [ id, opts.phone, opts.dob, opts.isRedlisted ]);
 	}
 
 	async funnelsGetAnonymized(): Promise<AnonymizedFunnels> {
@@ -330,6 +362,10 @@ function toApiStats(row: any): ApiStats {
 
 function toClientVersion(row: any): ClientVersion {
 	return { semver: row.semver, isUpdateRequired: row.is_update_required, createdAt: new Date(row.created_at) };
+}
+
+function toContact(row: any): Contact {
+	return { id: row.id, phone: row.phone, dob: row.dob, isRedlisted: row.is_redlisted, tosAgreed: row.tos_agreed, createdAt: row.created_at };
 }
 
 function toResponseTime(row: any): ResponseTime {
