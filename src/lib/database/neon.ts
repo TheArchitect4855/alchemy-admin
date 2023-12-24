@@ -1,7 +1,7 @@
 import * as neon from '@neondatabase/serverless';
 import { error } from '@sveltejs/kit';
 import type Database from './interface';
-import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels, ApiStats, ClientVersion, Contact, ResponseTime } from './types';
+import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels, ApiStats, ClientVersion, Contact, Profile, ResponseTime } from './types';
 
 export default class NeonDatabase implements Database {
 	private client: neon.Client;
@@ -134,6 +134,33 @@ export default class NeonDatabase implements Database {
 				is_redlisted = $4
 			WHERE id = $1
 		`, [ id, opts.phone, opts.dob, opts.isRedlisted ]);
+	}
+
+	async profileDelete(contact: string): Promise<void> {
+		await this.client.query(`DELETE FROM profiles WHERE contact = $1`, [ contact ]);
+	}
+	
+	async profileGet(contact: string): Promise<Profile | null> {
+		const query = await this.client.query(`
+			SELECT c.id, c.phone, c.dob, c.is_redlisted, c.tos_agreed, c.created_at AS ct_created_at,
+				p.name, p.bio, p.gender, p.photo_urls, p.neurodiversities, p.interests,
+				p.relationship_interests, p.pronouns, p.is_visible, p.created_at AS pr_created_at
+			FROM profiles p
+			INNER JOIN contacts c
+				ON p.contact = c.id
+			WHERE c.id = $1
+		`, [ contact ]);
+
+		if (query.rows.length == 0) return null;
+		else return toProfile(query.rows[0]);
+	}
+
+	async profileSetVisible(contact: string, opts: { isVisible: boolean; }): Promise<void> {
+		await this.client.query(`
+			UPDATE profiles
+			SET is_visible = $2
+			WHERE contact = $1
+		`, [ contact, opts.isVisible ]);
 	}
 
 	async funnelsGetAnonymized(): Promise<AnonymizedFunnels> {
@@ -366,6 +393,29 @@ function toClientVersion(row: any): ClientVersion {
 
 function toContact(row: any): Contact {
 	return { id: row.id, phone: row.phone, dob: row.dob, isRedlisted: row.is_redlisted, tosAgreed: row.tos_agreed, createdAt: row.created_at };
+}
+
+function toProfile(row: any): Profile {
+	return {
+		contact: {
+			id: row.id,
+			phone: row.phone,
+			dob: row.dob,
+			isRedlisted: row.is_redlisted,
+			tosAgreed: row.tos_agreed,
+			createdAt: row.ct_created_at,
+		},
+		name: row.name,
+		bio: row.bio,
+		gender: row.gender,
+		photoUrls: row.photo_urls,
+		neurodiversities: row.neurodiversities,
+		interests: row.interests,
+		relationshipInterests: row.relationship_interests,
+		pronouns: row.pronouns,
+		isVisible: row.is_visible,
+		createdAt: row.pr_created_at,
+	};
 }
 
 function toResponseTime(row: any): ResponseTime {

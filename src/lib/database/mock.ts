@@ -1,5 +1,5 @@
 import type Database from "./interface";
-import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid, ApiStats, ResponseTime, ClientVersion, Contact } from "./types";
+import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid, ApiStats, ResponseTime, ClientVersion, Contact, Profile } from "./types";
 import data from "./mock.json";
 
 const lastMonth = Date.now() - 2_592_000_000;
@@ -7,7 +7,7 @@ const dayMs = 86_400_000;
 
 export default class MockDatabase implements Database {
 	private static clientVersions: ClientVersion[] = [ { semver: '0.0.0', isUpdateRequired: true, createdAt: new Date() } ];
-	private static contacts: Contact[] = getRandomContacts(10);
+	private static profiles: Profile[] = getRandomProfiles(10);
 
 	async close(): Promise<void> { }
 
@@ -61,20 +61,34 @@ export default class MockDatabase implements Database {
 	}
 
 	async contactGet(id: string): Promise<Contact | null> {
-		return MockDatabase.contacts.find((e) => e.id == id) ?? null;
+		return MockDatabase.profiles.find((e) => e.contact.id == id)?.contact ?? null;
 	}
 
 	async contactGetByPhone(phone: string): Promise<Contact | null> {
-		return MockDatabase.contacts.find((e) => e.phone == phone) ?? null;
+		return MockDatabase.profiles.find((e) => e.contact.phone == phone)?.contact ?? null;
 	}
 
 	async contactUpdate(id: string, opts: { phone: string; dob: Date; isRedlisted: boolean; }): Promise<void> {
-		const contact = MockDatabase.contacts.find((e) => e.id == id);
+		const contact = MockDatabase.profiles.find((e) => e.contact.id == id)?.contact;
 		if (contact == null) return;
 
 		contact.phone = opts.phone;
 		contact.dob = opts.dob;
 		contact.isRedlisted = opts.isRedlisted;
+	}
+
+	async profileDelete(contact: string): Promise<void> {
+		const profile = MockDatabase.profiles.findIndex((e) => e.contact.id == contact);
+		if (profile >= 0) MockDatabase.profiles.splice(profile, 1);
+	}
+
+	async profileGet(contact: string): Promise<Profile | null> {
+		return MockDatabase.profiles.find((e) => e.contact.id == contact) ?? null;
+	}
+
+	async profileSetVisible(contact: string, opts: { isVisible: boolean; }): Promise<void> {
+		const profile = MockDatabase.profiles.find((e) => e.contact.id == contact);
+		if (profile != null) profile.isVisible = opts.isVisible;
 	}
 
 	async funnelsGetAnonymized(): Promise<AnonymizedFunnels> {
@@ -166,8 +180,8 @@ export default class MockDatabase implements Database {
 	}
 }
 
-function getRandomContacts(count: number): Contact[] {
-	const res: Contact[] = [];
+function getRandomProfiles(count: number): Profile[] {
+	const res: Profile[] = [];
 	for (let i = 0; i < count; i += 1) {
 		const idChunks = [];
 		for (let j = 0; j < 8; j += 1) {
@@ -179,13 +193,53 @@ function getRandomContacts(count: number): Contact[] {
 		const id = `${idChunks[0]}${idChunks[1]}-${idChunks[2]}-${idChunks[3]}-${idChunks[4]}-${idChunks[5]}${idChunks[6]}${idChunks[7]}`;
 
 		let phone = '+1';
-		for (let i = 0; i < 10; i += 1) phone += randomRangeI(1, 9).toString();
+		for (let j = 0; j < 10; j += 1) phone += randomRangeI(1, 9).toString();
 
 		const dobYear = randomRangeI(1998, 2003);
 		const dobMonth = randomRangeI(0, 11);
 		const dobDay = randomRange(0, 28);
 		const dob = new Date(dobYear, dobMonth, dobDay);
-		res.push({ id, phone, dob, isRedlisted: Math.random() < 0.5, tosAgreed: Math.random() < 0.5, createdAt: new Date() });
+		const contact = { id, phone, dob, isRedlisted: Math.random() < 0.5, tosAgreed: Math.random() < 0.5, createdAt: new Date() };
+
+		let gender: string;
+		let pronouns: string;
+		const rng = Math.random();
+		if (rng < 0.3) {
+			gender = 'woman';
+			pronouns = 'She/Her';
+		} else if (rng < 0.6) {
+			gender = 'man';
+			pronouns = 'He/Him';
+		} else {
+			gender = 'nonbinary';
+			pronouns = 'They/Them';
+		}
+
+		const relationshipInterests: ('flings' | 'friends' | 'romance')[] = [];
+		const possibleRelationshipInterests: typeof relationshipInterests = ['flings', 'friends', 'romance'];
+		for (const r of possibleRelationshipInterests) {
+			if (Math.random() < 0.5) continue;
+			relationshipInterests.push(r);
+		}
+
+		const profile = {
+			contact,
+			name: `User ${i}`,
+			bio: 'I am a test user.',
+			gender,
+			photoUrls: [
+				'https://images.pexels.com/photos/19488566/pexels-photo-19488566/free-photo-of-yasaka-pagoda-in-kyoto-city-skyline.jpeg',
+				'https://images.pexels.com/photos/11785305/pexels-photo-11785305.jpeg',
+			],
+			neurodiversities: [],
+			interests: [],
+			relationshipInterests,
+			pronouns,
+			isVisible: Math.random() < 0.5,
+			createdAt: new Date(),
+		};
+
+		res.push(profile);
 	}
 
 	console.dir(res);

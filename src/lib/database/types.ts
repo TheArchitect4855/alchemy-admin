@@ -69,6 +69,20 @@ export type Contact = {
 	createdAt: Date,
 };
 
+export type Profile = {
+	contact: Contact,
+	name: string,
+	bio: string,
+	gender: string,
+	photoUrls: string[],
+	neurodiversities: string[],
+	interests: string[],
+	relationshipInterests: ('friends' | 'flings' | 'romance')[],
+	pronouns: string | null,
+	isVisible: boolean,
+	createdAt: Date,
+};
+
 export type ResponseTime = {
 	date: Date,
 	p10: number,

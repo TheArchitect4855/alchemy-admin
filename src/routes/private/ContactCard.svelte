@@ -64,7 +64,7 @@
 </script>
 
 <section class="card">
-	<canvas bind:this={ canvas } width="128" height="128"></canvas>
+	<canvas bind:this={ canvas } width="196" height="196"></canvas>
 	<div>
 		<h4>{ contact.id }</h4>
 		<table>
@@ -156,18 +156,12 @@
 </dialog>
 
 <style>
-	canvas, section.card {
+	canvas {
 		border-radius: 1ch;
 	}
 
 	form > table {
 		margin-block: 1em;
-	}
-
-	section.card {
-		border: 1px solid var(--colour-surface-80);
-		margin-block: 1em;
-		padding: 1ch;
 	}
 
 	section.card > * {
