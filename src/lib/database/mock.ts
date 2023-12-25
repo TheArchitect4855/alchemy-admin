@@ -8,6 +8,7 @@ const dayMs = 86_400_000;
 export default class MockDatabase implements Database {
 	private static clientVersions: ClientVersion[] = [ { semver: '0.0.0', isUpdateRequired: true, createdAt: new Date() } ];
 	private static profiles: Profile[] = getRandomProfiles(10);
+	private static reviewQueue: Profile[] = [ ...MockDatabase.profiles ];
 
 	async close(): Promise<void> { }
 
@@ -120,7 +121,10 @@ export default class MockDatabase implements Database {
 		};
 	}
 
-	async deleteProfileReviewQueue(id: string): Promise<void> { }
+	async deleteProfileReviewQueue(id: string): Promise<void> {
+		const index = MockDatabase.reviewQueue.findIndex((e) => e.contact.id == id);
+		if (index >= 0) MockDatabase.reviewQueue.splice(index, 1)[0];
+	}
 
 	async getAllowedRoutesByContact(contact: string): Promise<AllowedRoute[]> {
 		return data['allowedRoutes'];
@@ -156,7 +160,7 @@ export default class MockDatabase implements Database {
 		return stats;
 	}
 
-	async getProfileReviewQueue(): Promise<Profile[]> { return []; }
+	async getProfileReviewQueue(): Promise<Profile[]> { return MockDatabase.reviewQueue; }
 
 	async getResponseTimes(): Promise<ResponseTime[]> {
 		const responseTimes: ResponseTime[] = [];
