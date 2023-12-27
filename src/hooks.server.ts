@@ -23,9 +23,11 @@ export const handle: Handle = async ({ event, resolve }): Promise<Response> => {
 	const acceptHeader = event.request.headers.get('Accept');
 	const authError = acceptHeader?.includes('text/html') ? redirect(303, '/login') : error(401, 'Unauthorized');
 
+	let cache: KVNamespace | null;
 	let db: Database;
 	let session: Session;
 	if (dev) {
+		cache = null;
 		db = new MockDatabase();
 		session = {
 			allowedRoutes: await db.getAllowedRoutesByContact(''),
@@ -34,6 +36,7 @@ export const handle: Handle = async ({ event, resolve }): Promise<Response> => {
 	} else {
 		const env = event.platform?.env;
 		if (!env) throw error(500, 'Missing ENV');
+		cache = env.KV_CACHE;
 
 		const sid = event.cookies.get('sid');
 		if (!sid) throw authError;
@@ -52,6 +55,7 @@ export const handle: Handle = async ({ event, resolve }): Promise<Response> => {
 
 	if (!session.allowedRoutes.find((e) => event.url.pathname.startsWith(`/private${e.path}`))) throw redirect(303, `/private${session.allowedRoutes[0].path}`);
 
+	event.locals.cache = cache;
 	event.locals.db = db;
 	event.locals.session = session;
 

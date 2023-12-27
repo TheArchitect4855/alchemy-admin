@@ -9,6 +9,7 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
+			cache: KVNamespace,
 			db: Database,
 			session: Session,
 		}
