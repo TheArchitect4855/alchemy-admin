@@ -39,6 +39,8 @@ async function updateSessions(cache: KVNamespace, grid: AllowedRoutesGrid): Prom
 		if (list.list_complete) isFinished = true;
 		else cursor = list.cursor;
 	}
+
+	await Promise.all(promises);
 }
 
 async function updateSession(cache: KVNamespace, key: string, expiration: number | undefined, grid: AllowedRoutesGrid): Promise<void> {
