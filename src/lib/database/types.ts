@@ -69,6 +69,11 @@ export type Contact = {
 	createdAt: Date,
 };
 
+export type PhoneGreenlist = {
+	phone: string,
+	nickname: string,
+};
+
 export type Profile = {
 	contact: Contact,
 	name: string,

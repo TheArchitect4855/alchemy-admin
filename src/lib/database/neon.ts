@@ -1,7 +1,7 @@
 import * as neon from '@neondatabase/serverless';
 import { error } from '@sveltejs/kit';
 import type Database from './interface';
-import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels, ApiStats, ClientVersion, Contact, Profile, ResponseTime } from './types';
+import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels, ApiStats, ClientVersion, Contact, PhoneGreenlist, Profile, ResponseTime } from './types';
 
 export default class NeonDatabase implements Database {
 	private client: neon.Client;
@@ -134,6 +134,33 @@ export default class NeonDatabase implements Database {
 				is_redlisted = $4
 			WHERE id = $1
 		`, [ id, opts.phone, opts.dob, opts.isRedlisted ]);
+	}
+
+	async phoneGreenlistCreate(phone: string, nickname: string): Promise<void> {
+		await this.client.query(`
+			INSERT INTO phone_greenlist (phone, nickname)
+			VALUES ($1, $2)
+		`, [ phone, nickname ]);
+	}
+
+	async phoneGreenlistDelete(phone: string): Promise<void> {
+		await this.client.query(`
+			DELETE FROM phone_greenlist
+			WHERE phone = $1
+		`, [ phone ]);
+	}
+
+	async phoneGreenlistGet(): Promise<PhoneGreenlist[]> {
+		const query = await this.client.query(`SELECT phone, nickname FROM phone_greenlist`);
+		return query.rows.map((e) => ({ phone: e.phone, nickname: e.nickname }));
+	}
+
+	async phoneGreenlistUpdate(phone: string, nickname: string): Promise<void> {
+		await this.client.query(`
+			UPDATE phone_greenlist
+			SET nickname = $2
+			WHERE phone = $1
+		`, [ phone, nickname ]);
 	}
 
 	async profileDelete(contact: string): Promise<void> {

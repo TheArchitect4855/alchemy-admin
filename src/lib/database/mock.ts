@@ -1,5 +1,5 @@
 import type Database from "./interface";
-import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid, ApiStats, ResponseTime, ClientVersion, Contact, Profile } from "./types";
+import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid, ApiStats, ResponseTime, ClientVersion, Contact, Profile, PhoneGreenlist } from "./types";
 import data from "./mock.json";
 
 const lastMonth = Date.now() - 2_592_000_000;
@@ -76,6 +76,25 @@ export default class MockDatabase implements Database {
 		contact.phone = opts.phone;
 		contact.dob = opts.dob;
 		contact.isRedlisted = opts.isRedlisted;
+	}
+
+	async phoneGreenlistCreate(phone: string, nickname: string): Promise<void> {
+		if (data.phoneGreenlist.find((e) => e.phone == phone)) throw new Error('duplicate phone');
+		data.phoneGreenlist.push({ phone, nickname });
+	}
+
+	async phoneGreenlistDelete(phone: string): Promise<void> {
+		const index = data.phoneGreenlist.findIndex((e) => e.phone == phone);
+		if (index >= 0) data.phoneGreenlist.splice(index, 1);
+	}
+
+	async phoneGreenlistGet(): Promise<PhoneGreenlist[]> {
+		return data.phoneGreenlist;
+	}
+
+	async phoneGreenlistUpdate(phone: string, nickname: string): Promise<void> {
+		const item = data.phoneGreenlist.find((e) => e.phone == phone);
+		if (item != null) item.nickname = nickname;
 	}
 
 	async profileDelete(contact: string): Promise<void> {

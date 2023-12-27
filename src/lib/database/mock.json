@@ -5,11 +5,18 @@
 		{ "path": "/api-logs", "name": "API Logs" },
 		{ "path": "/client-versions", "name": "Client Versions" },
 		{ "path": "/contacts", "name": "Contacts" },
-		{ "path": "/review-queue", "name": "Review Queue" }
+		{ "path": "/review-queue", "name": "Review Queue" },
+		{ "path": "/phone-greenlist", "name": "Phone Greenlist" }
 	],
 	"developer": {
 		"id": "00000000-0000-0000-0000-000000000000",
 		"name": "Developer",
 		"phone": "+15555555555"
-	}
+	},
+	"phoneGreenlist": [
+		{
+			"phone": "+15555555555",
+			"nickname": "Developer"
+		}
+	]
 }
