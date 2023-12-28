@@ -88,6 +88,13 @@ export type Profile = {
 	createdAt: Date,
 };
 
+export type Report = {
+	contact: Contact,
+	reporter: Contact,
+	reason: string,
+	createdAt: Date,
+};
+
 export type ResponseTime = {
 	date: Date,
 	p10: number,

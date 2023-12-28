@@ -1,5 +1,5 @@
 import type Database from "./interface";
-import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid, ApiStats, ResponseTime, ClientVersion, Contact, Profile, PhoneGreenlist } from "./types";
+import type { ActiveUsers, AdminContact, AnonymizedFunnels, AllowedRoute, AllowedRoutesGrid, ApiStats, ResponseTime, ClientVersion, Contact, Profile, PhoneGreenlist, Report } from "./types";
 import data from "./mock.json";
 
 const lastMonth = Date.now() - 2_592_000_000;
@@ -8,6 +8,7 @@ const dayMs = 86_400_000;
 export default class MockDatabase implements Database {
 	private static clientVersions: ClientVersion[] = [ { semver: '0.0.0', isUpdateRequired: true, createdAt: new Date() } ];
 	private static profiles: Profile[] = getRandomProfiles(10);
+	private static reports: Report[] = [ { contact: MockDatabase.profiles[0].contact, reporter: MockDatabase.profiles[1].contact, reason: 'Test report!', createdAt: new Date() } ];
 	private static reviewQueue: Profile[] = [ ...MockDatabase.profiles ];
 
 	async close(): Promise<void> { }
@@ -109,6 +110,15 @@ export default class MockDatabase implements Database {
 	async profileSetVisible(contact: string, opts: { isVisible: boolean; }): Promise<void> {
 		const profile = MockDatabase.profiles.find((e) => e.contact.id == contact);
 		if (profile != null) profile.isVisible = opts.isVisible;
+	}
+
+	async reportsDelete(contact: string, reporter: string): Promise<void> {
+		const index = MockDatabase.reports.findIndex((e) => e.contact.id == contact && e.reporter.id == reporter);
+		if (index >= 0) MockDatabase.reports.splice(index, 1);
+	}
+
+	async reportsGet(): Promise<Report[]> {
+		return MockDatabase.reports;
 	}
 
 	async funnelsGetAnonymized(): Promise<AnonymizedFunnels> {

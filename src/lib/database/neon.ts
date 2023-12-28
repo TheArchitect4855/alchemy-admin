@@ -1,7 +1,7 @@
 import * as neon from '@neondatabase/serverless';
 import { error } from '@sveltejs/kit';
 import type Database from './interface';
-import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels, ApiStats, ClientVersion, Contact, PhoneGreenlist, Profile, ResponseTime } from './types';
+import type { ActiveUsers, AdminContact, AdminRoute, AllowedRoute, AllowedRoutesGrid, AnonymizedFunnels, ApiStats, ClientVersion, Contact, PhoneGreenlist, Profile, Report, ResponseTime } from './types';
 
 export default class NeonDatabase implements Database {
 	private client: neon.Client;
@@ -188,6 +188,30 @@ export default class NeonDatabase implements Database {
 			SET is_visible = $2
 			WHERE contact = $1
 		`, [ contact, opts.isVisible ]);
+	}
+
+	async reportsDelete(contact: string, reporter: string): Promise<void> {
+		await this.client.query(`DELETE FROM reports WHERE contact = $1 AND reporter = $2`, [ contact, reporter ]);
+	}
+
+	async reportsGet(): Promise<Report[]> {
+		const query = await this.client.query(`
+			SELECT target.id AS t_id, target.phone AS t_phone, target.dob AS t_dob,
+				target.is_redlisted AS t_is_redlisted, target.tos_agreed AS t_tos_agreed,
+				target.created_at AS t_created_at,
+				reporter.id AS r_id, reporter.phone AS r_phone, reporter.dob AS r_dob,
+				reporter.is_redlisted AS r_is_redlisted, reporter.tos_agreed AS r_tos_agreed,
+				reporter.created_at AS r_created_at,
+				r.reason, r.created_at
+			FROM reports r
+			INNER JOIN contacts target
+				ON r.contact = target.id
+			INNER JOIN contacts reporter
+				ON r.reporter = reporter.id
+			LIMIT 100
+		`);
+
+		return query.rows.map(toReport);
 	}
 
 	async funnelsGetAnonymized(): Promise<AnonymizedFunnels> {
@@ -467,6 +491,29 @@ function toProfile(row: any): Profile {
 		pronouns: row.pronouns,
 		isVisible: row.is_visible,
 		createdAt: row.pr_created_at,
+	};
+}
+
+function toReport(row: any): Report {
+	return {
+		contact: {
+			id: row.t_id,
+			phone: row.t_phone,
+			dob: row.t_dob,
+			isRedlisted: row.t_is_redlisted,
+			tosAgreed: row.t_tos_agreed,
+			createdAt: row.t_created_at,
+		},
+		reporter: {
+			id: row.r_id,
+			phone: row.r_phone,
+			dob: row.r_dob,
+			isRedlisted: row.r_is_redlisted,
+			tosAgreed: row.r_tos_agreed,
+			createdAt: row.r_created_at,
+		},
+		reason: row.reason,
+		createdAt: row.created_at,
 	};
 }
 
